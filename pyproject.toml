@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openai-project-roles"
+version = "1.0.0"
+description = "Streamlit app to apply default project roles to OpenAI API platform projects"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "streamlit>=1.28.0",
+    "requests>=2.31.0",
+    "pyyaml>=6.0",
+    "wxpython",
+    "importlib_resources>=5.12; python_version < '3.9'",
+]
+
+[project.scripts]
+project-roles = "openai_project_roles.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["openai_project_roles*"]
+
+[tool.setuptools.package-data]
+openai_project_roles = ["default_project_roles.yaml"]

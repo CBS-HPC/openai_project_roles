@@ -1,0 +1,203 @@
+# default_project_roles.yaml
+#
+# Default project roles for a university research organisation.
+# These are *project-level* roles for researchers.
+#
+# Design goals:
+# - All roles can run models (inference).
+# - All roles can manage their own project API keys.
+# - No role has organisation/project admin or billing permissions.
+# - No role can manage other users' keys.
+# - Roles are focused on common research workflows:
+#   - Inference-only
+#   - RAG
+#   - Fine-tuning
+#   - Agent Builder
+#   - Eval & Analysis
+
+roles:
+  - role_name: "Inference Only"
+    description: "Can run models (text, audio, images, realtime, etc.) but cannot manage data, agents, or other users' keys."
+    permissions:
+      # Models & inference
+      - "api.model.read"                    # list models in the project
+      - "model.read"                        # generic model read (kept since it's in your allowed set)
+      - "model.request"                     # generic model invocation
+      - "api.model.chat_completions.request"
+      - "api.model.embeddings.request"
+      - "api.model.moderations.request"
+      - "api.model.realtime.request"
+
+      # Unified Responses API
+      - "api.responses.read"
+      - "api.responses.write"
+
+      # Project visibility (but no write)
+      - "project.read"
+
+      # Project API keys – user can manage their *own* keys only
+      - "api.organization.projects.api_keys.self.read"
+      - "api.organization.projects.api_keys.self.write"
+
+  - role_name: "RAG"
+    description: "Can run models and build retrieval-augmented workflows (files, vector stores, assistants, prompts, datasets). No admin or billing."
+    permissions:
+      # Inference baseline
+      - "api.model.read"
+      - "model.read"
+      - "model.request"
+      - "api.model.chat_completions.request"
+      - "api.model.embeddings.request"
+      - "api.model.moderations.request"
+      - "api.model.realtime.request"
+      - "api.responses.read"
+      - "api.responses.write"
+      - "project.read"
+
+      # Own API keys only
+      - "api.organization.projects.api_keys.self.read"
+      - "api.organization.projects.api_keys.self.write"
+
+      # Files & Vector Stores (RAG building blocks)
+      - "api.files.read"
+      - "api.files.write"
+      - "vector_store.read"
+      - "vector_store.write"
+
+      # Assistants & Threads (for orchestrated RAG agents)
+      - "api.assistants.read"
+      - "api.assistants.write"
+      - "api.threads.read"
+      - "api.threads.write"
+
+      # Context prompts (reusable prompts / “system prompts” for Responses & Realtime)
+      - "api.context.prompts.read"
+      - "api.context.prompts.write"
+
+      # Datasets (curated corpora, evaluation or reference sets)
+      - "api.datasets.read"
+      - "api.datasets.write"
+
+      # Optional: external connectors for RAG (if you want them to hook into DBs / drives)
+      - "api.connectors.read"
+      - "api.connectors.write"
+
+  - role_name: "Fine-tuning"
+    description: "Can run models and create/manage fine-tuning jobs, including datasets, files, and evals. No admin or billing."
+    permissions:
+      # Inference baseline
+      - "api.model.read"
+      - "model.read"
+      - "model.request"
+      - "api.model.chat_completions.request"
+      - "api.model.embeddings.request"
+      - "api.model.moderations.request"
+      - "api.model.realtime.request"
+      - "api.responses.read"
+      - "api.responses.write"
+      - "project.read"
+
+      # Own API keys only
+      - "api.organization.projects.api_keys.self.read"
+      - "api.organization.projects.api_keys.self.write"
+
+      # Files for training data
+      - "api.files.read"
+      - "api.files.write"
+
+      # Datasets for training/eval corpora (and sub-scopes)
+      - "api.datasets.read"
+      - "api.datasets.write"
+      - "api.datasets.dataset.read"
+      - "api.datasets.dataset.write"
+      - "api.datasets.input_annotations.read"
+      - "api.datasets.input_annotations.write"
+      - "api.datasets.output_annotations.read"
+      - "api.datasets.output_annotations.write"
+      - "api.datasets.internal.read"
+      - "api.datasets.internal.write"
+
+      # Fine-tuning jobs
+      - "api.fine_tuning.jobs.read"
+      - "api.fine_tuning.jobs.write"
+
+      # Evals for measuring tuned model quality
+      - "api.evals.read"
+      - "api.evals.write"
+      # (Deliberately *not* giving delete here to be safer with experiment history)
+
+  - role_name: "Agent Builder"
+    description: "Can build agents and workflows (Assistants, Workflows, RAG components) but has no admin or billing rights."
+    permissions:
+      # Inference baseline
+      - "api.model.read"
+      - "model.read"
+      - "model.request"
+      - "api.model.chat_completions.request"
+      - "api.model.embeddings.request"
+      - "api.model.moderations.request"
+      - "api.model.realtime.request"
+      - "api.responses.read"
+      - "api.responses.write"
+      - "project.read"
+
+      # Own API keys only
+      - "api.organization.projects.api_keys.self.read"
+      - "api.organization.projects.api_keys.self.write"
+
+      # Assistants & Threads (core agent orchestration)
+      - "api.assistants.read"
+      - "api.assistants.write"
+      - "api.threads.read"
+      - "api.threads.write"
+
+      # Workflows (this is effectively the Agent Builder / workflows API)
+      - "api.workflows.read"
+      - "api.workflows.write"
+      - "api.workflows.execute"
+      - "api.workflows.share"
+
+      # Tools commonly used by agents
+      - "api.files.read"
+      - "api.files.write"
+      - "vector_store.read"
+      - "vector_store.write"
+      - "api.datasets.read"
+      - "api.datasets.write"
+      - "api.context.prompts.read"
+      - "api.context.prompts.write"
+      - "api.connectors.read"
+      - "api.connectors.write"
+
+      # Webhooks for event-driven workflows
+      - "api.webhooks.read"
+      - "api.webhooks.write"
+
+  - role_name: "Eval & Analysis"
+    description: "Can run models and create evals using files and datasets for benchmarking, but cannot fine-tune or manage agents."
+    permissions:
+      # Inference baseline
+      - "api.model.read"
+      - "model.read"
+      - "model.request"
+      - "api.model.chat_completions.request"
+      - "api.model.embeddings.request"
+      - "api.model.moderations.request"
+      - "api.model.realtime.request"
+      - "api.responses.read"
+      - "api.responses.write"
+      - "project.read"
+
+      # Own API keys only
+      - "api.organization.projects.api_keys.self.read"
+      - "api.organization.projects.api_keys.self.write"
+
+      # Files & datasets for evaluation corpora
+      - "api.files.read"
+      - "api.files.write"
+      - "api.datasets.read"
+      - "api.datasets.write"
+
+      # Evals only (no fine-tuning jobs)
+      - "api.evals.read"
+      - "api.evals.write"

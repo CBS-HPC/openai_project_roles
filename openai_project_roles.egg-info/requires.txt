@@ -1,0 +1,7 @@
+streamlit>=1.28.0
+requests>=2.31.0
+pyyaml>=6.0
+wxpython
+
+[:python_version < "3.9"]
+importlib_resources>=5.12

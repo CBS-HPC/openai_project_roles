@@ -1,0 +1,12 @@
+README.md
+pyproject.toml
+openai_project_roles/__init__.py
+openai_project_roles/app.py
+openai_project_roles/cli.py
+openai_project_roles/default_project_roles.yaml
+openai_project_roles.egg-info/PKG-INFO
+openai_project_roles.egg-info/SOURCES.txt
+openai_project_roles.egg-info/dependency_links.txt
+openai_project_roles.egg-info/entry_points.txt
+openai_project_roles.egg-info/requires.txt
+openai_project_roles.egg-info/top_level.txt
