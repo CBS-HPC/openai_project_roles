@@ -14,7 +14,7 @@ def main():
     """
     # Get the directory where this module is located
     module_dir = os.path.dirname(os.path.abspath(__file__))
-    app_path = os.path.join(module_dir, "app.py")
+    app_path = os.path.join(module_dir, "app/main.py")
 
     # Parse CLI args for this wrapper (sys.argv[0] is the script name)
     args = sys.argv[1:]

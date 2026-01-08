@@ -1,0 +1,1 @@
+"""Simple modular Streamlit app."""

@@ -24,4 +24,4 @@ where = ["."]
 include = ["openai_project_roles*"]
 
 [tool.setuptools.package-data]
-openai_project_roles = ["default_project_roles.yaml"]
+openai_project_roles = ["default_project_roles.yaml","openai_project_budgets.yaml","openai_project_usage.csv"]

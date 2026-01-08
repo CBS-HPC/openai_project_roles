@@ -4,11 +4,13 @@ Version: 1.0.0
 Summary: Streamlit app to apply default project roles to OpenAI API platform projects
 Requires-Python: >=3.8
 Description-Content-Type: text/markdown
+License-File: LICENSE
 Requires-Dist: streamlit>=1.28.0
 Requires-Dist: requests>=2.31.0
 Requires-Dist: pyyaml>=6.0
 Requires-Dist: wxpython
 Requires-Dist: importlib_resources>=5.12; python_version < "3.9"
+Dynamic: license-file
 
 # OpenAI Project Roles Manager
 
@@ -100,7 +102,7 @@ roles:
 ## Security Notice
 Admin API keys are stored in plaintext at:
 ```
-~/.openai_admin_key
+~/.env
 ```
 Use only on trusted machines.
 

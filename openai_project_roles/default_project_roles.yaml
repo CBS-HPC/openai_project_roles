@@ -16,6 +16,22 @@
 #   - Eval & Analysis
 
 roles:
+  - role_name:  "Default Role"
+    description: "Can run text-based inference using Chat Completions and the Responses API"
+    permissions:
+      # Models & inference
+      - "api.model.read"                    # list models in the project
+      - "model.read"                        # generic model read (kept since it's in your allowed set)
+      - "api.model.chat_completions.request"
+      
+      # Unified Responses API
+      - "api.responses.read"
+      - "api.responses.write"
+
+      # Project API keys – user can manage their *own* keys only
+      - "api.organization.projects.api_keys.self.read"
+      - "api.organization.projects.api_keys.self.write"
+
   - role_name: "Inference Only"
     description: "Can run models (text, audio, images, realtime, etc.) but cannot manage data, agents, or other users' keys."
     permissions:
