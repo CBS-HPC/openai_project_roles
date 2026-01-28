@@ -60,6 +60,12 @@ openai_project_roles/
 
 ## 🚀 Installation
 
+### Using uv (recommended for dev)
+```bash
+uv sync --extra test --extra lint
+```
+
+
 ### From a local wheel
 ```bash
 pip install openai_project_roles-<VERSION>-py3-none-any.whl
@@ -112,6 +118,31 @@ main(
 
 
 
+## Tests & Lint
+
+Run tests:
+```bash
+uv run --extra test pytest
+```
+
+Run lint:
+```bash
+uv run --extra lint ruff check .
+```
+
+---
+
+## Build
+
+Build sdist + wheel (isolated env):
+```bash
+uv run --with build python -m build
+```
+
+Artifacts land in `dist/`.
+
+---
+
 ## 🔐 Credentials & Security
 
 - Requires an **OpenAI Admin API key**
@@ -131,6 +162,13 @@ main(
   - Preserves historical data
 
 This dramatically reduces API calls and load time.
+
+---
+
+## CI
+
+GitHub Actions runs tests on Windows/macOS/Linux and runs Ruff on Linux.
+`wxpython` is treated as optional and is skipped in CI install steps.
 
 ---
 

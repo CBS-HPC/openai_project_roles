@@ -1,3 +1,4 @@
 DotEnv configuration
 .env
 __pycache__/
+openai_project_roles.egg-info/
