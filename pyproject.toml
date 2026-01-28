@@ -12,8 +12,19 @@ dependencies = [
     "streamlit>=1.28.0",
     "requests>=2.31.0",
     "pyyaml>=6.0",
+    "matplotlib>=3.7.0",
     "wxpython",
     "importlib_resources>=5.12; python_version < '3.9'",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0",
+    "freezegun>=1.4.0",
+]
+lint = [
+    "ruff>=0.6.0",
 ]
 
 [project.scripts]
@@ -25,3 +36,13 @@ include = ["openai_project_roles*"]
 
 [tool.setuptools.package-data]
 openai_project_roles = ["default_project_roles.yaml","openai_project_budgets.yaml","openai_project_usage.csv"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+extend-exclude = ["dist", ".venv", "openai_project_roles.egg-info"]

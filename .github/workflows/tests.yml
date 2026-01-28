@@ -1,0 +1,70 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.11"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies (skip wxpython on CI)
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src = Path("requirements.txt").read_text(encoding="utf-8").splitlines()
+          out = [line for line in src if not line.strip().lower().startswith("wxpython==")]
+          Path("requirements-ci.txt").write_text("\n".join(out) + "\n", encoding="utf-8")
+          PY
+          uv pip install -r requirements-ci.txt
+          uv pip install -e . --no-deps
+
+      - name: Run tests
+        run: uv run pytest
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install lint deps
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src = Path("requirements.txt").read_text(encoding="utf-8").splitlines()
+          out = [line for line in src if not line.strip().lower().startswith("wxpython==")]
+          Path("requirements-ci.txt").write_text("\n".join(out) + "\n", encoding="utf-8")
+          PY
+          uv pip install -r requirements-ci.txt
+          uv pip install -e . --no-deps
+
+      - name: Ruff
+        run: uv run ruff check .
