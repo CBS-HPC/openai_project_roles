@@ -80,6 +80,12 @@ def _load_usage_cache_csv(usage_file_path: Path) -> pd.DataFrame:
     df["cost_usd"] = pd.to_numeric(df["cost_usd"], errors="coerce").fillna(0.0)
 
     df = df.dropna(subset=["day"])
+
+    # Drop the most recent day to force a partial-day refresh on next pull.
+    if not df.empty:
+        last_day = df["day"].max()
+        df = df[df["day"] != last_day]
+
     return df[["project_id", "day", "cost_usd"]]
 
 
@@ -360,7 +366,7 @@ def _pull_and_store_usage_data(
         end_d=end_d,
         project_id_filter=project_id,
     )
-
+  
     # Fetch only missing day ranges
     pulled_daily_parts: List[pd.DataFrame] = []
     if missing_ranges:
@@ -464,7 +470,7 @@ def _pull_and_store_usage_data(
     # Add unattributed (if present in daily)
     unattributed_spend = float(spend_map.get("unattributed", 0.0))
     if unattributed_spend != 0.0 and "unattributed" not in set(df["project_id"].astype(str)):
-        df.loc[len(df)] = {
+        row = pd.DataFrame([{
             "project_id": "unattributed",
             "project_name": "(unattributed)",
             "status": "",
@@ -472,7 +478,8 @@ def _pull_and_store_usage_data(
             "spend_usd": round(unattributed_spend, 4),
             "budget_usd": budgets.get("unattributed"),
             "pct_of_budget": None,
-        }
+        }])
+        df = pd.concat([df, row], ignore_index=True)
 
     df = df.sort_values("spend_usd", ascending=False).reset_index(drop=True)
 
