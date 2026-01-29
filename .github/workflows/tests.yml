@@ -34,8 +34,8 @@ jobs:
           out = [line for line in src if not line.strip().lower().startswith("wxpython==")]
           Path("requirements-ci.txt").write_text("\n".join(out) + "\n", encoding="utf-8")
           PY
-          uv pip install -r requirements-ci.txt
-          uv pip install -e . --no-deps
+          uv pip install --system -r requirements-ci.txt
+          uv pip install --system -e . --no-deps
 
       - name: Run tests
         run: uv run pytest
@@ -63,8 +63,8 @@ jobs:
           out = [line for line in src if not line.strip().lower().startswith("wxpython==")]
           Path("requirements-ci.txt").write_text("\n".join(out) + "\n", encoding="utf-8")
           PY
-          uv pip install -r requirements-ci.txt
-          uv pip install -e . --no-deps
+          uv pip install --system -r requirements-ci.txt
+          uv pip install --system -e . --no-deps
 
       - name: Ruff
         run: uv run ruff check .
@@ -95,9 +95,9 @@ jobs:
           out = [line for line in src if not line.strip().lower().startswith("wxpython==")]
           Path("requirements-ci.txt").write_text("\n".join(out) + "\n", encoding="utf-8")
           PY
-          uv pip install -r requirements-ci.txt
-          uv pip install -e . --no-deps
-          uv pip install mypy types-requests types-PyYAML
+          uv pip install --system -r requirements-ci.txt
+          uv pip install --system -e . --no-deps
+          uv pip install --system mypy types-requests types-PyYAML
 
       - name: Mypy
         run: uv run mypy openai_project_roles
