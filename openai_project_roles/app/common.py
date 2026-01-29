@@ -14,15 +14,16 @@ import yaml
 # Config
 # ----------------------------
 BASE_URL = "https://api.openai.com/v1"
-ROLES_CONFIG_PATH = "default_project_roles.yaml"
 GITHUB_RAW_URL = (
     "https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/default_project_roles.yaml"
 )
 
 # Local persistence (plain text; use only on trusted machines)
+PACKAGE_DIR = Path(__file__).resolve().parents[1]
 ADMIN_KEY_FILE = Path(".env")
-BUDGETS_FILE = Path("openai_project_budgets.yaml")
-USAGE_FILE = Path("openai_project_usage.csv")
+ROLES_CONFIG_PATH = str(PACKAGE_DIR / "default_project_roles.yaml")
+BUDGETS_FILE = PACKAGE_DIR / "openai_project_budgets.yaml"
+USAGE_FILE = PACKAGE_DIR / "openai_project_usage.csv"
 
 
 # Optional: native file dialog
