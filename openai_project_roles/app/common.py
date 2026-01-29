@@ -25,7 +25,7 @@ USAGE_FILE = Path("openai_project_usage.csv")
 
 # Optional: native file dialog
 try:
-    import wx  # type: ignore
+    import wx
     _WX_AVAILABLE = True
 except Exception:
     _WX_AVAILABLE = False
@@ -202,28 +202,28 @@ def browse_for_yaml(start_path: Optional[Union[str, Path]] = None, title: str = 
     ext = "yaml"
     wildcard = f"{ext.upper()} files (*.{ext})|*.{ext}"
 
-    app = wx.App(False)  # type: ignore
+    app = wx.App(False)
     if os.path.isfile(start_str):
         default_dir, default_file = os.path.split(start_str)
     else:
         default_dir, default_file = (start_str, "")
 
-    dlg = wx.FileDialog(  # type: ignore
+    dlg = wx.FileDialog(
         None,
         message=title,
         defaultDir=default_dir,
         defaultFile=default_file,
         wildcard=wildcard,
-        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,  # type: ignore
+        style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST,
     )
 
     try:
-        if dlg.ShowModal() == wx.ID_OK:  # type: ignore
-            return dlg.GetPath()  # type: ignore
+        if dlg.ShowModal() == wx.ID_OK:
+            return dlg.GetPath()
         return None
     finally:
-        dlg.Destroy()  # type: ignore
-        app.Destroy()  # type: ignore
+        dlg.Destroy()
+        app.Destroy()
 
 
 # ----------------------------

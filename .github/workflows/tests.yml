@@ -68,3 +68,36 @@ jobs:
 
       - name: Ruff
         run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install typecheck deps
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          src = Path("requirements.txt").read_text(encoding="utf-8").splitlines()
+          out = [line for line in src if not line.strip().lower().startswith("wxpython==")]
+          Path("requirements-ci.txt").write_text("\n".join(out) + "\n", encoding="utf-8")
+          PY
+          uv pip install -r requirements-ci.txt
+          uv pip install -e . --no-deps
+          uv pip install mypy types-requests types-PyYAML
+
+      - name: Mypy
+        run: uv run mypy openai_project_roles

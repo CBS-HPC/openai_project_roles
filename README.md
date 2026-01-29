@@ -62,7 +62,7 @@ openai_project_roles/
 
 ### Using uv (recommended for dev)
 ```bash
-uv sync --extra test --extra lint
+uv sync --extra test --extra lint --extra type
 ```
 
 
@@ -128,6 +128,7 @@ uv run --extra test pytest
 Run lint:
 ```bash
 uv run --extra lint ruff check .
+uv run --extra lint ruff format --check .
 ```
 
 ---
@@ -162,6 +163,15 @@ Artifacts land in `dist/`.
   - Preserves historical data
 
 This dramatically reduces API calls and load time.
+
+---
+
+## Type Check
+
+Run mypy:
+```bash
+uv run --extra type mypy openai_project_roles
+```
 
 ---
 

@@ -239,9 +239,6 @@ def _pull_and_store_usage_by_key_data(
                 # If you have many projects, you can optimize later by pulling all projects
                 # and filtering client-side, but this is simplest + predictable.
                 for pid in proj_df["project_id"].tolist():
-                    r_start_dt = datetime(r_start.year, r_start.month, r_start.day, tzinfo=timezone.utc)
-                    r_end_dt = datetime(r_end.year, r_end.month, r_end.day, tzinfo=timezone.utc) + timedelta(days=1)
-
                     # Your helper returns totals across buckets; with bucket_width=1d it sums days
                     # BUT we want per-day. To keep it simple, pull day-by-day within the range.
                     # (This avoids ambiguities in how totals are returned.)
@@ -309,9 +306,6 @@ def render_key_tab(
     with colC:
         pull_clicked = st.button("📥 Pull Records", type="primary", key="ubk_pull")
 
-    # Project selector (after we have projects)
-    project_filter: Optional[List[str]] = None
-
     # If no prior data and not pulled
     if not pull_clicked and st.session_state.get("usage_by_key_df") is None:
         st.info("Click **Pull Records** to fetch usage grouped by API key.")
@@ -357,14 +351,7 @@ def render_key_tab(
         )
     ].copy()
 
-    # Project multi-select
-    proj_options = [
-        f"{r['project_id']} — {r.get('project_name') or ''}".strip()
-        for _, r in projects_df.iterrows()
-    ]
-    proj_id_by_label = {lbl.split(" — ")[0]: lbl.split(" — ")[0] for lbl in proj_options}  # id is first token
-
-    selected_proj_ids = st.multiselect(
+    selected_proj_ids: List[str] = st.multiselect(
         "Projects",
         options=projects_df["project_id"].tolist(),
         default=projects_df["project_id"].tolist()[:1],
@@ -403,7 +390,12 @@ def render_key_tab(
     st.markdown("### Trend")
     c1, c2, c3 = st.columns([1, 2, 2])
     with c1:
-        bar_width_label = st.selectbox("Bar width", ["Day", "Week", "Month"], index=1, key="ubk_bar_width")
+        bar_width_label: str = st.selectbox(
+            "Bar width",
+            ["Day", "Week", "Month"],
+            index=1,
+            key="ubk_bar_width",
+        )
     with c2:
         start_date = st.date_input("Start date", value=pd.to_datetime(period.get("start")).date(), key="ubk_start")
     with c3:

@@ -508,7 +508,7 @@ def _render_chart_selector(df: pd.DataFrame) -> List[str]:
     selected_ids = set(map(str, st.session_state.get("usage_plot_projects", [])))
     default_labels = [lbl for lbl, pid in id_by_label.items() if pid in selected_ids]
 
-    selected_labels = st.multiselect(
+    selected_labels: List[str] = st.multiselect(
         "Show usage chart for projects",
         options=options,
         default=default_labels,
@@ -625,7 +625,12 @@ def _render_usage_chart(selected_pids: List[str]) -> None:
 
     c1, c2, c3 = st.columns([1, 2, 2])
     with c1:
-        bar_width_label = st.selectbox("Bar width", ["Day", "Week", "Month"], index=1, key="usage_chart_bar_width")
+        bar_width_label: str = st.selectbox(
+            "Bar width",
+            ["Day", "Week", "Month"],
+            index=1,
+            key="usage_chart_bar_width",
+        )
     with c2:
         start_date = st.date_input(
             "Start date",
