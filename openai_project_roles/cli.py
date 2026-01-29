@@ -1,4 +1,5 @@
 """CLI entry point for the OpenAI Project Roles app."""
+
 import os
 import sys
 from streamlit.web import cli as stcli
@@ -46,7 +47,7 @@ def main():
     if roles_config_path:
         streamlit_args.extend(
             [
-                "--",                  # everything after this goes to the script
+                "--",  # everything after this goes to the script
                 "--roles-config-path",
                 roles_config_path,
             ]

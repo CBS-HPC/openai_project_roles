@@ -13,7 +13,7 @@ from common import (
     utc_now,
     subtract_months,
     list_org_projects,
-    fetch_usage_by_api_key,   # <-- import your function
+    fetch_usage_by_api_key,  # <-- import your function
 )
 
 USAGE_BY_KEY_FILE = Path("openai_usage_by_api_key.csv")
@@ -43,7 +43,7 @@ def _safe_concat_usage(*dfs: pd.DataFrame) -> pd.DataFrame:
             {
                 "project_id": pd.Series(dtype="string"),
                 "api_key_id": pd.Series(dtype="string"),
-                "day": pd.Series(dtype="object"),         # python date
+                "day": pd.Series(dtype="object"),  # python date
                 "metric": pd.Series(dtype="string"),
                 "value": pd.Series(dtype="float64"),
             }
@@ -130,7 +130,9 @@ def _add_coverage_rows_usage(df: pd.DataFrame, start_d: date, end_d: date) -> pd
     return _safe_concat_usage(df, cov)
 
 
-def _missing_day_ranges_usage(cached_df: pd.DataFrame, start_d: date, end_d: date) -> List[Tuple[date, date]]:
+def _missing_day_ranges_usage(
+    cached_df: pd.DataFrame, start_d: date, end_d: date
+) -> List[Tuple[date, date]]:
     cov = cached_df[
         (cached_df["project_id"] == "__coverage__")
         & (cached_df["api_key_id"] == "__coverage__")
@@ -211,11 +213,17 @@ def _pull_and_store_usage_by_key_data(
 
     # Fetch projects list each time (names/status can change)
     with st.spinner("Fetching projects..."):
-        projects = list_org_projects(admin_api_key, include_archived=include_archived, project_id=None)
+        projects = list_org_projects(
+            admin_api_key, include_archived=include_archived, project_id=None
+        )
 
     proj_df = pd.DataFrame(
         [
-            {"project_id": str(p.get("id")), "project_name": p.get("name"), "status": p.get("status")}
+            {
+                "project_id": str(p.get("id")),
+                "project_name": p.get("name"),
+                "status": p.get("status"),
+            }
             for p in projects
         ]
     )
@@ -279,7 +287,10 @@ def _pull_and_store_usage_by_key_data(
     # Store session state for this tab
     st.session_state["usage_by_key_projects_df"] = proj_df.reset_index(drop=True)
     st.session_state["usage_by_key_cache_path"] = str(usage_by_key_file_path.resolve())
-    st.session_state["usage_by_key_period"] = {"start": start_d.isoformat(), "end": end_d.isoformat()}
+    st.session_state["usage_by_key_period"] = {
+        "start": start_d.isoformat(),
+        "end": end_d.isoformat(),
+    }
     st.session_state["usage_by_key_df"] = cached.copy()
 
 
@@ -397,9 +408,13 @@ def render_key_tab(
             key="ubk_bar_width",
         )
     with c2:
-        start_date = st.date_input("Start date", value=pd.to_datetime(period.get("start")).date(), key="ubk_start")
+        start_date = st.date_input(
+            "Start date", value=pd.to_datetime(period.get("start")).date(), key="ubk_start"
+        )
     with c3:
-        end_date = st.date_input("End date", value=pd.to_datetime(period.get("end")).date(), key="ubk_end")
+        end_date = st.date_input(
+            "End date", value=pd.to_datetime(period.get("end")).date(), key="ubk_end"
+        )
 
     if start_date > end_date:
         st.error("Start date must be on or before end date.")
@@ -409,7 +424,10 @@ def render_key_tab(
     dff = df[df["metric"] == metric].copy()
     dff["day"] = pd.to_datetime(dff["day"], errors="coerce")
     dff = dff.dropna(subset=["day"])
-    dff = dff[(dff["day"] >= pd.Timestamp(start_date)) & (dff["day"] <= pd.Timestamp(end_date) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1))]
+    dff = dff[
+        (dff["day"] >= pd.Timestamp(start_date))
+        & (dff["day"] <= pd.Timestamp(end_date) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1))
+    ]
 
     if dff.empty:
         st.info("No data for the selected metric and date range.")
@@ -426,7 +444,9 @@ def render_key_tab(
 
     # Aggregate into buckets
     agg = dff.groupby(["bucket", "api_key_id"], as_index=False)["value"].sum()
-    wide = agg.pivot_table(index="bucket", columns="api_key_id", values="value", fill_value=0.0).sort_index()
+    wide = agg.pivot_table(
+        index="bucket", columns="api_key_id", values="value", fill_value=0.0
+    ).sort_index()
 
     fig, ax = plt.subplots()
     wide.plot(kind="bar", ax=ax, stacked=True)

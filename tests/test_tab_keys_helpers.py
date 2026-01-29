@@ -51,7 +51,9 @@ def test_safe_concat_usage_empty() -> None:
 
 def test_load_usage_by_key_cache_csv(tmp_path: Path) -> None:
     path = tmp_path / "usage_by_key.csv"
-    path.write_text("project_id,api_key_id,day,metric,value\np1,k1,2026-01-01,requests,2\n", encoding="utf-8")
+    path.write_text(
+        "project_id,api_key_id,day,metric,value\np1,k1,2026-01-01,requests,2\n", encoding="utf-8"
+    )
     df = tab_keys._load_usage_by_key_cache_csv(path)
     assert len(df) == 1
     assert df.iloc[0]["project_id"] == "p1"

@@ -12,6 +12,7 @@ from common import (
     create_project_role,
 )
 
+
 def render_roles_tab(roles_config_path: str = ROLES_CONFIG_PATH) -> None:
     st.title("🔑 OpenAI Project Roles Manager")
     st.markdown("Apply default project roles to OpenAI API platform projects")
@@ -34,7 +35,9 @@ def render_roles_tab(roles_config_path: str = ROLES_CONFIG_PATH) -> None:
         st.code(str(Path(roles_config_path).resolve()), language="bash")
     with col_g3:
         if st.button("Change path"):
-            chosen = browse_for_yaml(start_path=roles_config_path, title="Select default_project_roles.yaml file")
+            chosen = browse_for_yaml(
+                start_path=roles_config_path, title="Select default_project_roles.yaml file"
+            )
             if chosen and chosen != roles_config_path:
                 test_roles = load_roles_config(roles_config_path=chosen)
                 if test_roles is not None:
@@ -42,14 +45,20 @@ def render_roles_tab(roles_config_path: str = ROLES_CONFIG_PATH) -> None:
                     st.success(f"✅ Loaded {len(test_roles)} role(s) from selected file")
                     st.rerun()
                 else:
-                    st.error("❌ Selected file is not a valid roles YAML. Please choose another file.")
+                    st.error(
+                        "❌ Selected file is not a valid roles YAML. Please choose another file."
+                    )
             elif chosen is None:
-                st.info("Native file picker requires wxPython; install it or edit the path manually.")
+                st.info(
+                    "Native file picker requires wxPython; install it or edit the path manually."
+                )
 
     roles = load_roles_config(roles_config_path=roles_config_path)
 
     if not roles:
-        st.warning(f"⚠️ `default_project_roles.yaml` not found or invalid at: {Path(roles_config_path).resolve()}")
+        st.warning(
+            f"⚠️ `default_project_roles.yaml` not found or invalid at: {Path(roles_config_path).resolve()}"
+        )
         col1, col2 = st.columns([1, 3])
         with col1:
             if st.button("📥 Download from GitHub"):
@@ -95,7 +104,7 @@ def render_roles_tab(roles_config_path: str = ROLES_CONFIG_PATH) -> None:
             f"🚀 Create {selected_count} Selected Role(s)",
             type="primary",
             disabled=selected_count == 0 or not project_id or not api_key,
-            width='stretch',
+            width="stretch",
         ):
             if not api_key:
                 st.error("❌ Please provide an API key")
@@ -104,7 +113,9 @@ def render_roles_tab(roles_config_path: str = ROLES_CONFIG_PATH) -> None:
                 st.error("❌ Please provide a project ID")
                 return
 
-            selected_roles_list = [role for role in roles if st.session_state.selected_roles[role["role_name"]]]
+            selected_roles_list = [
+                role for role in roles if st.session_state.selected_roles[role["role_name"]]
+            ]
 
             progress_bar = st.progress(0)
             status_container = st.container()

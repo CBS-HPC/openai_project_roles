@@ -8,7 +8,19 @@ from openai_project_roles.app import main
 
 
 def test_parse_script_args(monkeypatch) -> None:
-    monkeypatch.setattr(sys, "argv", ["app.py", "--roles-config-path", "r.yaml", "--budget-path", "b.yaml", "--usage-path", "u.csv"])
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "app.py",
+            "--roles-config-path",
+            "r.yaml",
+            "--budget-path",
+            "b.yaml",
+            "--usage-path",
+            "u.csv",
+        ],
+    )
     args = main._parse_script_args()
     assert args.roles_config_path == "r.yaml"
     assert args.budget_path == "b.yaml"

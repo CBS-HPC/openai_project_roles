@@ -200,7 +200,9 @@ def _add_coverage_rows(df: pd.DataFrame, start_d: date, end_d: date) -> pd.DataF
 
     out_df["project_id"] = out_df["project_id"].astype("string")
     out_df["day"] = pd.to_datetime(out_df["day"], errors="coerce").dt.date
-    out_df["cost_usd"] = pd.to_numeric(out_df["cost_usd"], errors="coerce").fillna(0.0).astype("float64")
+    out_df["cost_usd"] = (
+        pd.to_numeric(out_df["cost_usd"], errors="coerce").fillna(0.0).astype("float64")
+    )
 
     # Drop rows that are totally NA in the key fields (optional but keeps concat clean)
     out_df = out_df.dropna(subset=["day"])
@@ -222,12 +224,14 @@ def _ensure_usage_defaults(budget_file_path: str, usage_file_path: Path) -> None
 
 
 def _have_usage_data() -> bool:
-    return (st.session_state.get("usage_df") is not None) and (st.session_state.get("usage_daily_costs_df") is not None)
+    return (st.session_state.get("usage_df") is not None) and (
+        st.session_state.get("usage_daily_costs_df") is not None
+    )
 
 
 def _maybe_invalidate_on_param_change(current_params: Dict[str, Any]) -> bool:
     last_params = st.session_state.get("usage_params")
-    changed = (last_params != current_params)
+    changed = last_params != current_params
 
     have_df = st.session_state.get("usage_df") is not None
     have_daily = st.session_state.get("usage_daily_costs_df") is not None
@@ -260,8 +264,8 @@ def _render_usage_controls() -> Tuple[int, bool, bool, Dict[str, Any]]:
     return months, include_archived, pull_clicked, current_params
 
 
-
 # Add this helper somewhere near your other helpers (top of file)
+
 
 def _safe_concat_daily(*dfs: pd.DataFrame) -> pd.DataFrame:
     """
@@ -275,7 +279,7 @@ def _safe_concat_daily(*dfs: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(
             {
                 "project_id": pd.Series(dtype="string"),
-                "day": pd.Series(dtype="object"),      # python date objects
+                "day": pd.Series(dtype="object"),  # python date objects
                 "cost_usd": pd.Series(dtype="float64"),
             }
         )
@@ -292,9 +296,7 @@ def _safe_concat_daily(*dfs: pd.DataFrame) -> pd.DataFrame:
         out["project_id"] = out["project_id"].astype("string")
         out["day"] = pd.to_datetime(out["day"], errors="coerce").dt.date
         out["cost_usd"] = (
-            pd.to_numeric(out["cost_usd"], errors="coerce")
-            .fillna(0.0)
-            .astype("float64")
+            pd.to_numeric(out["cost_usd"], errors="coerce").fillna(0.0).astype("float64")
         )
 
         out = out.dropna(subset=["day"])
@@ -366,7 +368,7 @@ def _pull_and_store_usage_data(
         end_d=end_d,
         project_id_filter=project_id,
     )
-  
+
     # Fetch only missing day ranges
     pulled_daily_parts: List[pd.DataFrame] = []
     if missing_ranges:
@@ -374,7 +376,9 @@ def _pull_and_store_usage_data(
             for r_start, r_end in missing_ranges:
                 # Convert to datetimes (inclusive day range)
                 r_start_dt = datetime(r_start.year, r_start.month, r_start.day, tzinfo=timezone.utc)
-                r_end_dt = datetime(r_end.year, r_end.month, r_end.day, tzinfo=timezone.utc) + timedelta(days=1)
+                r_end_dt = datetime(
+                    r_end.year, r_end.month, r_end.day, tzinfo=timezone.utc
+                ) + timedelta(days=1)
 
                 # fetch for [r_start_dt, r_end_dt+1day) - aligns with API end_time semantics
                 _, daily_costs = fetch_costs_by_project(
@@ -391,8 +395,8 @@ def _pull_and_store_usage_data(
 
     # Merge cache with pulled
     if pulled_daily_parts:
-        #pulled_all = pd.concat(pulled_daily_parts, ignore_index=True)
-        #merged = pd.concat([cached, pulled_all], ignore_index=True)
+        # pulled_all = pd.concat(pulled_daily_parts, ignore_index=True)
+        # merged = pd.concat([cached, pulled_all], ignore_index=True)
         pulled_all = _safe_concat_daily(*pulled_daily_parts)
         merged = _safe_concat_daily(cached, pulled_all)
 
@@ -415,7 +419,9 @@ def _pull_and_store_usage_data(
     # Session state daily df
     period_daily_df = period_daily.copy()
     period_daily_df["day"] = pd.to_datetime(period_daily_df["day"], errors="coerce")
-    period_daily_df["cost_usd"] = pd.to_numeric(period_daily_df["cost_usd"], errors="coerce").fillna(0.0)
+    period_daily_df["cost_usd"] = pd.to_numeric(
+        period_daily_df["cost_usd"], errors="coerce"
+    ).fillna(0.0)
     st.session_state["usage_daily_costs_df"] = period_daily_df[["project_id", "day", "cost_usd"]]
 
     # Session state daily dict (non-zero only)
@@ -470,15 +476,19 @@ def _pull_and_store_usage_data(
     # Add unattributed (if present in daily)
     unattributed_spend = float(spend_map.get("unattributed", 0.0))
     if unattributed_spend != 0.0 and "unattributed" not in set(df["project_id"].astype(str)):
-        row = pd.DataFrame([{
-            "project_id": "unattributed",
-            "project_name": "(unattributed)",
-            "status": "",
-            "created_at": "",
-            "spend_usd": round(unattributed_spend, 4),
-            "budget_usd": budgets.get("unattributed"),
-            "pct_of_budget": None,
-        }])
+        row = pd.DataFrame(
+            [
+                {
+                    "project_id": "unattributed",
+                    "project_name": "(unattributed)",
+                    "status": "",
+                    "created_at": "",
+                    "spend_usd": round(unattributed_spend, 4),
+                    "budget_usd": budgets.get("unattributed"),
+                    "pct_of_budget": None,
+                }
+            ]
+        )
         df = pd.concat([df, row], ignore_index=True)
 
     df = df.sort_values("spend_usd", ascending=False).reset_index(drop=True)
@@ -542,10 +552,19 @@ def _render_budgets_table(df: pd.DataFrame) -> pd.DataFrame:
         hide_index=True,
         column_config={
             "spend_usd": st.column_config.NumberColumn("Spend (USD)", format="%.4f"),
-            "budget_usd": st.column_config.NumberColumn("Budget (USD)", min_value=0, step=1, format="%d"),
+            "budget_usd": st.column_config.NumberColumn(
+                "Budget (USD)", min_value=0, step=1, format="%d"
+            ),
             "pct_of_budget": st.column_config.NumberColumn("% of Budget", format="%.2f"),
         },
-        disabled=["project_id", "project_name", "status", "created_at", "spend_usd", "pct_of_budget"],
+        disabled=[
+            "project_id",
+            "project_name",
+            "status",
+            "created_at",
+            "spend_usd",
+            "pct_of_budget",
+        ],
         key="usage_budgets_editor",
     )
 
@@ -634,13 +653,21 @@ def _render_usage_chart(selected_pids: List[str]) -> None:
     with c2:
         start_date = st.date_input(
             "Start date",
-            value=(default_start.date() if default_start is not None and not pd.isna(default_start) else utc_now().date()),
+            value=(
+                default_start.date()
+                if default_start is not None and not pd.isna(default_start)
+                else utc_now().date()
+            ),
             key="usage_chart_start_date",
         )
     with c3:
         end_date = st.date_input(
             "End date",
-            value=(default_end.date() if default_end is not None and not pd.isna(default_end) else utc_now().date()),
+            value=(
+                default_end.date()
+                if default_end is not None and not pd.isna(default_end)
+                else utc_now().date()
+            ),
             key="usage_chart_end_date",
         )
 
@@ -671,7 +698,9 @@ def _render_usage_chart(selected_pids: List[str]) -> None:
         dff["bucket"] = periods.dt.start_time
 
     agg = dff.groupby(["bucket", "project_id"], as_index=False)["cost_usd"].sum()
-    wide = agg.pivot_table(index="bucket", columns="project_id", values="cost_usd", fill_value=0.0).sort_index()
+    wide = agg.pivot_table(
+        index="bucket", columns="project_id", values="cost_usd", fill_value=0.0
+    ).sort_index()
 
     fig, ax = plt.subplots()
     wide.plot(kind="bar", ax=ax, stacked=True)
@@ -722,7 +751,9 @@ def render_usage_tab(
 
     if not pull_clicked and not have_data:
         _render_usage_cache_info(usage_file_path)
-        st.info("Click **Pull Records** to fetch the project list and usage costs for the selected period.")
+        st.info(
+            "Click **Pull Records** to fetch the project list and usage costs for the selected period."
+        )
         return
 
     if pull_clicked:

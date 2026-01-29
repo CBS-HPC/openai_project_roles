@@ -15,7 +15,9 @@ import yaml
 # ----------------------------
 BASE_URL = "https://api.openai.com/v1"
 ROLES_CONFIG_PATH = "default_project_roles.yaml"
-GITHUB_RAW_URL = "https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/default_project_roles.yaml"
+GITHUB_RAW_URL = (
+    "https://raw.githubusercontent.com/YOUR_ORG/YOUR_REPO/main/default_project_roles.yaml"
+)
 
 # Local persistence (plain text; use only on trusted machines)
 ADMIN_KEY_FILE = Path(".env")
@@ -26,6 +28,7 @@ USAGE_FILE = Path("openai_project_usage.csv")
 # Optional: native file dialog
 try:
     import wx
+
     _WX_AVAILABLE = True
 except Exception:
     _WX_AVAILABLE = False
@@ -67,6 +70,7 @@ def persist_admin_key(key: str) -> None:
 # Persistence: Budgets
 # ----------------------------
 
+
 def load_project_budgets(budget_file: Union[str, Path] = BUDGETS_FILE) -> Dict[str, float]:
     """Load budgets mapping from a YAML file. Expected format: {'budgets': {project_id: number}}."""
     budget_path = Path(budget_file)
@@ -76,7 +80,7 @@ def load_project_budgets(budget_file: Union[str, Path] = BUDGETS_FILE) -> Dict[s
 
     try:
         data = yaml.safe_load(budget_path.read_text(encoding="utf-8")) or {}
-        budgets = (data.get("budgets") or {})
+        budgets = data.get("budgets") or {}
         if not isinstance(budgets, dict):
             return {}
 
@@ -104,13 +108,7 @@ def save_project_budgets(
     """Save budgets mapping to a YAML file in the format: {'budgets': {project_id: number}}."""
     budget_path = Path(budget_file)
 
-    payload = {
-        "budgets": {
-            str(k): float(v)
-            for k, v in budgets.items()
-            if v is not None
-        }
-    }
+    payload = {"budgets": {str(k): float(v) for k, v in budgets.items() if v is not None}}
 
     try:
         budget_path.parent.mkdir(parents=True, exist_ok=True)
@@ -120,6 +118,7 @@ def save_project_budgets(
         )
     except Exception as e:
         st.error(f"Failed to save budgets file: {e}")
+
 
 # ----------------------------
 # Date helpers
@@ -193,7 +192,9 @@ def load_roles_config(roles_config_path: str = ROLES_CONFIG_PATH) -> List[Dict[s
 # ----------------------------
 # Native file picker (optional)
 # ----------------------------
-def browse_for_yaml(start_path: Optional[Union[str, Path]] = None, title: str = "Select a YAML file") -> Optional[str]:
+def browse_for_yaml(
+    start_path: Optional[Union[str, Path]] = None, title: str = "Select a YAML file"
+) -> Optional[str]:
     """Open a native file chooser dialog via wxPython if available."""
     if not _WX_AVAILABLE:
         return None
@@ -295,6 +296,7 @@ def list_org_projects(
     # If filtering by project_id and not found, return empty list
     return projects if not project_id else []
 
+
 # FIX ME
 @st.cache_data(ttl=300)
 def fetch_usage_by_api_key(
@@ -302,7 +304,7 @@ def fetch_usage_by_api_key(
     start_dt: datetime,
     end_dt: datetime,
     project_id: Optional[str] = None,
-    usage_type: str = "completions",   # <-- NEW
+    usage_type: str = "completions",  # <-- NEW
 ) -> Dict[str, Dict[str, float]]:
     """
     Fetch org usage grouped by api_key_id (and optionally filtered to a project_id).
@@ -366,7 +368,6 @@ def fetch_usage_by_api_key(
             break
 
     return totals
-
 
 
 @st.cache_data(ttl=300)
@@ -435,9 +436,7 @@ def fetch_costs_by_project(
                 # Store raw daily values (non-zero only)
                 if value != 0.0:
                     daily_costs.setdefault(proj, {})
-                    daily_costs[proj][day] = (
-                        daily_costs[proj].get(day, 0.0) + value
-                    )
+                    daily_costs[proj][day] = daily_costs[proj].get(day, 0.0) + value
 
         if not payload.get("has_more"):
             break
@@ -453,6 +452,7 @@ def fetch_costs_by_project(
     daily_costs = {p: d for p, d in daily_costs.items() if d}
 
     return totals, daily_costs
+
 
 # ----------------------------
 # Shared UI: credentials
