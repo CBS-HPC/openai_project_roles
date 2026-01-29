@@ -38,7 +38,7 @@ jobs:
           uv pip install --system -e . --no-deps
 
       - name: Run tests
-        run: uv run pytest
+        run: python -m pytest
 
   lint:
     runs-on: ubuntu-latest
@@ -67,10 +67,10 @@ jobs:
           uv pip install --system -e . --no-deps
 
       - name: Ruff
-        run: uv run ruff check .
+        run: ruff check .
 
       - name: Ruff format
-        run: uv run ruff format --check .
+        run: ruff format --check .
 
   typecheck:
     runs-on: ubuntu-latest
@@ -100,4 +100,4 @@ jobs:
           uv pip install --system mypy types-requests types-PyYAML
 
       - name: Mypy
-        run: uv run mypy openai_project_roles
+        run: mypy openai_project_roles
