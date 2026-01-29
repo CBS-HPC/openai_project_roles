@@ -1,2 +1,0 @@
-[console_scripts]
-project-roles = openai_project_roles.cli:main

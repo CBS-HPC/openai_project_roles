@@ -1,15 +1,18 @@
 """CLI entry point for the OpenAI Project Roles app."""
+
 import os
 import sys
 from streamlit.web import cli as stcli
 
 
 def main():
-    """Launch the Streamlit app, optionally with a custom roles_config_path.
+    """Launch the Streamlit app with optional script args.
 
     Usage:
         project-roles
         project-roles --roles-config-path path/to/default_project_roles.yaml
+        project-roles --budget-path path/to/openai_project_budgets.yaml
+        project-roles --usage-path path/to/openai_project_usage.csv
         project-roles -c path/to/default_project_roles.yaml
     """
     # Get the directory where this module is located
@@ -19,6 +22,8 @@ def main():
     # Parse CLI args for this wrapper (sys.argv[0] is the script name)
     args = sys.argv[1:]
     roles_config_path = None
+    budget_path = None
+    usage_path = None
     passthrough_args = []
 
     i = 0
@@ -26,6 +31,12 @@ def main():
         arg = args[i]
         if arg in ("--roles-config-path", "-c") and i + 1 < len(args):
             roles_config_path = args[i + 1]
+            i += 2
+        elif arg == "--budget-path" and i + 1 < len(args):
+            budget_path = args[i + 1]
+            i += 2
+        elif arg == "--usage-path" and i + 1 < len(args):
+            usage_path = args[i + 1]
             i += 2
         else:
             # Any other args could be passed through to streamlit if you want
@@ -41,16 +52,17 @@ def main():
         "true",
     ]
 
-    # If a path was provided, pass it as a script argument after the "--"
+    # If paths were provided, pass them as script args after the "--"
     # so app.py can read it from sys.argv (e.g. via argparse).
+    script_args = []
     if roles_config_path:
-        streamlit_args.extend(
-            [
-                "--",                  # everything after this goes to the script
-                "--roles-config-path",
-                roles_config_path,
-            ]
-        )
+        script_args.extend(["--roles-config-path", roles_config_path])
+    if budget_path:
+        script_args.extend(["--budget-path", budget_path])
+    if usage_path:
+        script_args.extend(["--usage-path", usage_path])
+    if script_args:
+        streamlit_args.extend(["--", *script_args])
 
     # (Optional) also forward any other args to streamlit itself
     # streamlit_args.extend(passthrough_args)
