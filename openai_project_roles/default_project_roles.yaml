@@ -28,8 +28,9 @@ roles:
       - "model.request"
       - "api.model.chat_completions.request"
       - "api.model.embeddings.request"
-      - "api.model.moderations.request"
-      - "api.model.realtime.request"
+
+      # Project Usage metrics
+      - api.usage.read
 
       # Batch execution
       - "api.batch.read"
@@ -62,8 +63,9 @@ roles:
       - "model.request"
       - "api.model.chat_completions.request"
       - "api.model.embeddings.request"
-      - "api.model.moderations.request"
-      - "api.model.realtime.request"
+
+      # Project Usage metrics
+      - api.usage.read
 
       # Batch execution
       - "api.batch.read"
@@ -118,8 +120,9 @@ roles:
       - "model.request"
       - "api.model.chat_completions.request"
       - "api.model.embeddings.request"
-      - "api.model.moderations.request"
-      - "api.model.realtime.request"
+
+      # Project Usage metrics
+      - api.usage.read
 
       # Batch execution
       - "api.batch.read"
@@ -172,8 +175,9 @@ roles:
       - "model.request"
       - "api.model.chat_completions.request"
       - "api.model.embeddings.request"
-      - "api.model.moderations.request"
-      - "api.model.realtime.request"
+
+      # Project Usage metrics
+      - api.usage.read
 
       # Batch execution
       - "api.batch.read"
@@ -232,8 +236,9 @@ roles:
       - "model.request"
       - "api.model.chat_completions.request"
       - "api.model.embeddings.request"
-      - "api.model.moderations.request"
-      - "api.model.realtime.request"
+
+      # Project Usage metrics
+      - api.usage.read
 
       # Batch execution
       - "api.batch.read"
