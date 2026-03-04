@@ -35,28 +35,6 @@ This tool is designed for **administrators and platform owners** who need visibi
 
 ---
 
-## 🧱 Architecture Overview
-
-- **Streamlit UI**
-- **OpenAI Admin API**
-- **Local CSV caches** for usage data
-- Stateless reruns with `st.session_state` coordination
-
-```
-openai_project_roles/
-├── app/
-│   ├── main.py              # Streamlit entry point
-│   ├── tab_roles.py         # Project roles UI
-│   ├── tab_usage.py         # Project usage & cost UI
-│   ├── common.py            # API helpers, constants
-│   └── ...
-├── default_project_roles.yaml
-├── pyproject.toml
-└── README.md
-```
-
----
-
 ## Installation
 
 openai-project-roles is not published on PyPI yet. Use local wheel/source installation.
@@ -85,6 +63,30 @@ Installed automatically:
 - matplotlib
 
 (Python >= 3.9 recommended)
+
+---
+
+## 🧱 Architecture Overview
+
+- **Streamlit UI**
+- **OpenAI Admin API**
+- **Local CSV caches** for usage data
+- Stateless reruns with `st.session_state` coordination
+
+```
+openai_project_roles/
+├── app/
+│   ├── main.py              # Streamlit entry point
+│   ├── tab_roles.py         # Project roles UI
+│   ├── tab_usage.py         # Project usage & cost UI
+│   ├── common.py            # API helpers, constants
+│   └── ...
+├── default_project_roles.yaml
+├── pyproject.toml
+└── README.md
+```
+
+---
 
 ---
 
@@ -139,6 +141,17 @@ main(
   - Preserves historical data
 
 This dramatically reduces API calls and load time.
+
+---
+
+## Local Config and Data Files
+
+Default files are stored in the package data directory:
+- `default_project_roles.yaml`: default role definitions (role names + permissions) used by the Project Roles tab.
+- `openai_project_budgets.yaml`: editable per-project budget configuration used by the Project Usage tab.
+- `openai_project_usage.csv`: cached daily project cost rows used by the Project Usage tab.
+- `openai_usage_by_api_key.csv`: cached daily usage-by-key metric rows used by the API Key Usage tab.
+- `openai_api_key_names.csv`: local mapping of `api_key_id -> key_name` used to label API keys in tables/charts.
 
 ---
 
