@@ -41,10 +41,7 @@ openai-project-roles is not published on PyPI yet. Use local wheel/source instal
 
 ### Install from local wheel files (`/dist`)
 ```bash
-# 1) Build artifacts (if needed)
-uv build
-
-# 2) Install wheel from local dist
+# Install wheel from local dist
 pip install ./dist/openai_project_roles-1.0.0-py3-none-any.whl
 ```
 
@@ -66,24 +63,37 @@ Installed automatically:
 
 ---
 
-## 🧱 Architecture Overview
+## Architecture Overview
 
 - **Streamlit UI**
 - **OpenAI Admin API**
 - **Local CSV caches** for usage data
 - Stateless reruns with `st.session_state` coordination
 
-```
+```text
 openai_project_roles/
-├── app/
-│   ├── main.py              # Streamlit entry point
-│   ├── tab_roles.py         # Project roles UI
-│   ├── tab_usage.py         # Project usage & cost UI
-│   ├── common.py            # API helpers, constants
-│   └── ...
-├── default_project_roles.yaml
-├── pyproject.toml
-└── README.md
+|-- .github/
+|   `-- workflows/
+|       `-- tests.yml
+|-- dist/
+|-- openai_project_roles/
+|   |-- app/
+|   |   |-- main.py
+|   |   |-- common.py
+|   |   |-- tab_roles.py
+|   |   |-- tab_usage.py
+|   |   `-- tab_keys.py
+|   |-- cli.py
+|   `-- __init__.py
+|-- tests/
+|   |-- test_main.py
+|   |-- test_tab_roles.py
+|   |-- test_usage_helpers.py
+|   `-- test_tab_keys_helpers.py
+|-- pyproject.toml
+|-- requirements.txt
+|-- uv.lock
+`-- README.md
 ```
 
 ---
@@ -94,12 +104,12 @@ openai_project_roles/
 
 ### CLI
 ```bash
-project-roles
+openai_project_roles
 ```
 
 With custom paths:
 ```bash
-project-roles \
+openai_project_roles \
   --roles-config-path ./roles.yaml \
   --budget-path ./budgets.json \
   --usage-path ./usage_cache.csv
@@ -171,3 +181,4 @@ Contributions welcome!
 - Documentation improvements
 
 Please open an issue or pull request.
+

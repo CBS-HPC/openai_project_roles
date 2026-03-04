@@ -33,7 +33,7 @@ type = [
 ]
 
 [project.scripts]
-project-roles = "openai_project_roles.cli:main"
+openai_project_roles = "openai_project_roles.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

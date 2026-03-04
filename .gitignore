@@ -1,4 +1,12 @@
 DotEnv configuration
 .env
 __pycache__/
+.venv/
 openai_project_roles.egg-info/
+
+# Local config/data files
+openai_project_roles/openai_api_key_names.csv
+openai_project_roles/default_project_roles.yaml
+openai_project_roles/openai_project_budgets.yaml
+openai_project_roles/openai_project_usage.csv
+openai_project_roles/openai_usage_by_api_key.csv

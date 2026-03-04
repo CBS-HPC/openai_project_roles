@@ -9,11 +9,11 @@ def main():
     """Launch the Streamlit app with optional script args.
 
     Usage:
-        project-roles
-        project-roles --roles-config-path path/to/default_project_roles.yaml
-        project-roles --budget-path path/to/openai_project_budgets.yaml
-        project-roles --usage-path path/to/openai_project_usage.csv
-        project-roles -c path/to/default_project_roles.yaml
+        openai_project_roles
+        openai_project_roles --roles-config-path path/to/default_project_roles.yaml
+        openai_project_roles --budget-path path/to/openai_project_budgets.yaml
+        openai_project_roles --usage-path path/to/openai_project_usage.csv
+        openai_project_roles -c path/to/default_project_roles.yaml
     """
     # Get the directory where this module is located
     module_dir = os.path.dirname(os.path.abspath(__file__))
@@ -73,3 +73,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
