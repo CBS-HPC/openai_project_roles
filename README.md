@@ -31,7 +31,6 @@ This tool is designed for **administrators and platform owners** who need visibi
 - Budget tracking with editable per-project budgets
 - CSV export of aggregated tables
 
-
 > Note: API-key-level usage depends on OpenAI Usage API availability and may vary by organization.
 
 ---
@@ -58,17 +57,22 @@ openai_project_roles/
 
 ---
 
-## 🚀 Installation
+## Installation
 
-### Using uv (recommended for dev)
+openai-project-roles is not published on PyPI yet. Use local wheel/source installation.
+
+### Install from local wheel files (`/dist`)
 ```bash
-uv sync --extra test --extra lint --extra type
+# 1) Build artifacts (if needed)
+uv build
+
+# 2) Install wheel from local dist
+pip install ./dist/openai_project_roles-1.0.0-py3-none-any.whl
 ```
 
-
-### From a local wheel
+### Install directly from GitHub dist artifact
 ```bash
-pip install openai_project_roles-<VERSION>-py3-none-any.whl
+pip install https://github.com/CBS-HPC/openai_project_roles/raw/main/dist/openai_project_roles-1.0.0-py3-none-any.whl
 ```
 
 ### Dependencies
@@ -80,11 +84,11 @@ Installed automatically:
 - numpy
 - matplotlib
 
-(Python ≥ 3.9 recommended)
+(Python >= 3.9 recommended)
 
 ---
 
-## ▶️ Usage
+## Usage
 
 ### CLI
 ```bash
@@ -116,34 +120,6 @@ main(
 
 ---
 
-
-
-## Tests & Lint
-
-Run tests:
-```bash
-uv run --extra test pytest
-```
-
-Run lint:
-```bash
-uv run --extra lint ruff check .
-uv run --extra lint ruff format --check .
-```
-
----
-
-## Build
-
-Build sdist + wheel (isolated env):
-```bash
-uv run --with build python -m build
-```
-
-Artifacts land in `dist/`.
-
----
-
 ## 🔐 Credentials & Security
 
 - Requires an **OpenAI Admin API key**
@@ -163,15 +139,6 @@ Artifacts land in `dist/`.
   - Preserves historical data
 
 This dramatically reduces API calls and load time.
-
----
-
-## Type Check
-
-Run mypy:
-```bash
-uv run --extra type mypy openai_project_roles
-```
 
 ---
 
