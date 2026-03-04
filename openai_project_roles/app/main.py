@@ -1,8 +1,10 @@
 import argparse
 import sys
+
 import streamlit as st
 
-from common import ROLES_CONFIG_PATH, BUDGETS_FILE, USAGE_FILE, render_credentials_section
+from common import BUDGETS_FILE, ROLES_CONFIG_PATH, USAGE_FILE, render_credentials_section
+from tab_keys import render_key_tab
 from tab_roles import render_roles_tab
 from tab_usage import render_usage_tab
 
@@ -12,12 +14,13 @@ def main(
     budget_path: str = BUDGETS_FILE,
     usage_path: str = USAGE_FILE,
 ) -> None:
-    st.set_page_config(page_title="OpenAI Project Roles Manager", page_icon="🔑", layout="wide")
+    st.set_page_config(page_title="OpenAI Project Roles Manager", page_icon="??", layout="wide")
 
     render_credentials_section()
 
-    tab_roles, tab_usage = st.tabs(["🔑 Project Roles Manager", "📊 Project Usage"])
-    # tab_roles, tab_usage, tab_key = st.tabs(["🔑 Project Roles Manager", "📊 Project Usage", "📊 API Key Usage"])
+    tab_roles, tab_usage, tab_key = st.tabs(
+        ["Project Roles Manager", "Project Usage", "API Key Usage"]
+    )
 
     with tab_roles:
         render_roles_tab(roles_config_path=roles_config_path)
@@ -28,8 +31,8 @@ def main(
             usage_file_path=usage_path,
         )
 
-    # with tab_key:
-    #     render_key_tab()
+    with tab_key:
+        render_key_tab()
 
 
 def _parse_script_args() -> argparse.Namespace:

@@ -32,7 +32,7 @@ def test_main_calls_tabs_and_render(monkeypatch) -> None:
 
     monkeypatch.setattr(main, "st", dummy)
 
-    called = {"creds": False, "roles": False, "usage": False}
+    called = {"creds": False, "roles": False, "usage": False, "key": False}
 
     def _creds():
         called["creds"] = True
@@ -43,14 +43,19 @@ def test_main_calls_tabs_and_render(monkeypatch) -> None:
     def _usage(*args, **kwargs):
         called["usage"] = True
 
+    def _key(*args, **kwargs):
+        called["key"] = True
+
     monkeypatch.setattr(main, "render_credentials_section", _creds)
     monkeypatch.setattr(main, "render_roles_tab", _roles)
     monkeypatch.setattr(main, "render_usage_tab", _usage)
+    monkeypatch.setattr(main, "render_key_tab", _key)
 
     main.main("roles.yaml", "budgets.yaml", "usage.csv")
 
     assert called["creds"] is True
     assert called["roles"] is True
     assert called["usage"] is True
+    assert called["key"] is True
     assert "set_page_config" in dummy.calls
     assert "tabs" in dummy.calls

@@ -8,15 +8,18 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 
 from common import (
     utc_now,
     subtract_months,
     list_org_projects,
     fetch_usage_by_api_key,  # <-- import your function
+    USAGE_FILE,
 )
 
-USAGE_BY_KEY_FILE = Path("openai_usage_by_api_key.csv")
+USAGE_BY_KEY_FILE = USAGE_FILE.with_name("openai_usage_by_api_key.csv")
+API_KEY_NAMES_FILE = USAGE_FILE.with_name("openai_api_key_names.csv")
 
 
 # -----------------------------
@@ -111,6 +114,39 @@ def _save_usage_by_key_cache_csv(path: Path, df: pd.DataFrame) -> None:
     out.to_csv(path, index=False)
 
 
+def _load_api_key_names_csv(path: Path) -> pd.DataFrame:
+    if not path.exists():
+        return pd.DataFrame(columns=["api_key_id", "key_name"])
+
+    try:
+        df = pd.read_csv(path)
+    except Exception:
+        return pd.DataFrame(columns=["api_key_id", "key_name"])
+
+    for c in ["api_key_id", "key_name"]:
+        if c not in df.columns:
+            df[c] = ""
+
+    df["api_key_id"] = df["api_key_id"].astype(str)
+    df["key_name"] = df["key_name"].fillna("").astype(str)
+    df = df[df["api_key_id"].str.strip() != ""]
+    df = df.drop_duplicates(subset=["api_key_id"], keep="last").reset_index(drop=True)
+    return df[["api_key_id", "key_name"]]
+
+
+def _save_api_key_names_csv(path: Path, df: pd.DataFrame) -> None:
+    out = df.copy()
+    for c in ["api_key_id", "key_name"]:
+        if c not in out.columns:
+            out[c] = ""
+    out["api_key_id"] = out["api_key_id"].astype(str)
+    out["key_name"] = out["key_name"].fillna("").astype(str)
+    out = out[out["api_key_id"].str.strip() != ""]
+    out = out.drop_duplicates(subset=["api_key_id"], keep="last").sort_values("api_key_id")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    out[["api_key_id", "key_name"]].to_csv(path, index=False)
+
+
 def _add_coverage_rows_usage(df: pd.DataFrame, start_d: date, end_d: date) -> pd.DataFrame:
     """
     Coverage marker rows for each day fetched.
@@ -180,6 +216,8 @@ def _usage_totals_dict_to_tidy_df(
             try:
                 fval = float(val)
             except Exception:
+                continue
+            if fval == 0.0:
                 continue
             rows.append(
                 {
@@ -273,6 +311,9 @@ def _pull_and_store_usage_by_key_data(
     if pulled_parts:
         pulled_all = _safe_concat_usage(*pulled_parts)
         merged = _safe_concat_usage(cached, pulled_all)
+        merged = merged[
+            (merged["metric"] == "__coverage__") | (pd.to_numeric(merged["value"], errors="coerce") != 0.0)
+        ].copy()
 
         # Deduplicate by (project_id, api_key_id, day, metric): keep last
         merged = (
@@ -300,8 +341,8 @@ def _pull_and_store_usage_by_key_data(
 def render_key_tab(
     usage_by_key_file_path: Path = USAGE_BY_KEY_FILE,
 ) -> None:
-    st.title("🔑 Usage by API key")
-    st.markdown("Explore **non-cost usage metrics** grouped by **API key** within each project.")
+    st.title("Usage by API key")
+    st.markdown("Explore non-cost usage metrics grouped by API key.")
 
     admin_api_key = st.session_state.get("api_key", "")
     if not admin_api_key:
@@ -309,13 +350,13 @@ def render_key_tab(
         return
 
     # Controls
-    colA, colB, colC = st.columns([2, 2, 1])
-    with colA:
+    col_a, col_b, col_c = st.columns([2, 2, 1])
+    with col_a:
         months = st.slider("Months back", min_value=1, max_value=48, value=3, key="ubk_months")
-    with colB:
+    with col_b:
         include_archived = st.checkbox("Include archived projects", value=False, key="ubk_archived")
-    with colC:
-        pull_clicked = st.button("📥 Pull Records", type="primary", key="ubk_pull")
+    with col_c:
+        pull_clicked = st.button("Pull Records", type="primary", key="ubk_pull")
 
     # If no prior data and not pulled
     if not pull_clicked and st.session_state.get("usage_by_key_df") is None:
@@ -326,7 +367,6 @@ def render_key_tab(
 
     if pull_clicked:
         try:
-            # First pull without filtering, then let user filter from the loaded projects
             _pull_and_store_usage_by_key_data(
                 admin_api_key=admin_api_key,
                 months=months,
@@ -348,7 +388,7 @@ def render_key_tab(
         return
 
     if period:
-        st.caption(f"Period: {period.get('start')} → {period.get('end')} (UTC)")
+        st.caption(f"Period: {period.get('start')} -> {period.get('end')} (UTC)")
     cache_path = st.session_state.get("usage_by_key_cache_path")
     if cache_path:
         st.caption(f"Cache file: `{cache_path}`")
@@ -361,6 +401,7 @@ def render_key_tab(
             & (df_all["metric"] == "__coverage__")
         )
     ].copy()
+    df = df[pd.to_numeric(df["value"], errors="coerce").fillna(0.0) != 0.0].copy()
 
     selected_proj_ids: List[str] = st.multiselect(
         "Projects",
@@ -375,29 +416,60 @@ def render_key_tab(
         st.info("No usage rows for selected projects in the cached period.")
         return
 
-    # Metric selector
+    # Totals controls
     metric_options = sorted(df["metric"].dropna().unique().tolist())
-    metric = st.selectbox(
-        "Metric",
+    selected_metrics: List[str] = st.multiselect(
+        "Metrics (Totals table)",
         options=metric_options,
-        index=0,
-        help="Choose which usage metric to analyze.",
-        key="ubk_metric",
+        default=metric_options[:1],
+        help="Select one or more metrics to include as columns in totals.",
+        key="ubk_totals_metrics",
     )
+    if not selected_metrics:
+        st.info("Select at least one metric to show totals.")
+        return
 
-    # Totals table: api_key_id → total(metric)
+    # Totals table: api_key_id with one column per selected metric
     totals = (
-        df[df["metric"] == metric]
-        .groupby(["project_id", "api_key_id"], as_index=False)["value"]
+        df[df["metric"].isin(selected_metrics)]
+        .groupby(["api_key_id", "metric"], as_index=False)["value"]
         .sum()
-        .sort_values("value", ascending=False)
-        .reset_index(drop=True)
+        .pivot(index="api_key_id", columns="metric", values="value")
+        .fillna(0.0)
+        .reset_index()
     )
+    for metric_name in selected_metrics:
+        if metric_name not in totals.columns:
+            totals[metric_name] = 0.0
+
+    key_names_df = _load_api_key_names_csv(API_KEY_NAMES_FILE)
+    key_name_map = dict(zip(key_names_df["api_key_id"], key_names_df["key_name"]))
+    totals["key_name"] = totals["api_key_id"].map(key_name_map).fillna("")
+    totals = totals[["api_key_id", "key_name", *selected_metrics]]
+    totals = totals.sort_values(by=selected_metrics[0], ascending=False).reset_index(drop=True)
 
     st.markdown("### Totals by API key")
-    st.dataframe(totals, use_container_width=True, hide_index=True)
+    edited_totals = st.data_editor(
+        totals,
+        width="stretch",
+        hide_index=True,
+        key="ubk_totals_editor",
+        disabled=["api_key_id", *selected_metrics],
+    )
+    col_save_names, col_names_path = st.columns([1, 4])
+    with col_save_names:
+        save_names_clicked = st.button("Save key names", key="ubk_save_key_names")
+    with col_names_path:
+        st.caption(f"API key names file: `{str(API_KEY_NAMES_FILE.resolve())}`")
+    if save_names_clicked:
+        try:
+            names_to_save = edited_totals[["api_key_id", "key_name"]].copy()
+            _save_api_key_names_csv(API_KEY_NAMES_FILE, names_to_save)
+            st.success("Saved API key names.")
+        except Exception as e:
+            st.error(f"Failed to save API key names: {e}")
 
-    # Chart controls
+    # Trend controls
     st.markdown("### Trend")
     c1, c2, c3 = st.columns([1, 2, 2])
     with c1:
@@ -416,12 +488,47 @@ def render_key_tab(
             "End date", value=pd.to_datetime(period.get("end")).date(), key="ubk_end"
         )
 
+    trend_metrics: List[str] = st.multiselect(
+        "Metrics (Trend)",
+        options=metric_options,
+        default=metric_options[:1],
+        key="ubk_trend_metrics",
+    )
+
+    edited_key_name_map = {
+        str(r["api_key_id"]): str(r.get("key_name") or "").strip()
+        for _, r in edited_totals[["api_key_id", "key_name"]].iterrows()
+    }
+    display_name_by_key = {
+        str(k): (v if str(v).strip() else str(k))
+        for k, v in {
+            **key_name_map,
+            **edited_key_name_map,
+        }.items()
+    }
+
+    trend_api_key_options = sorted(df["api_key_id"].dropna().astype(str).unique().tolist())
+    selected_trend_api_keys: List[str] = st.multiselect(
+        "API keys (Trend)",
+        options=trend_api_key_options,
+        default=trend_api_key_options,
+        key="ubk_trend_api_keys",
+        format_func=lambda k: display_name_by_key.get(str(k), str(k)),
+    )
+    if not selected_trend_api_keys:
+        st.info("Select at least one API key for the trend graph.")
+        return
+    if not trend_metrics:
+        st.info("Select at least one metric for the trend graph.")
+        return
+
     if start_date > end_date:
         st.error("Start date must be on or before end date.")
         return
 
     # Prepare dataframe
-    dff = df[df["metric"] == metric].copy()
+    dff = df[df["metric"].isin(trend_metrics)].copy()
+    dff = dff[dff["api_key_id"].isin([str(x) for x in selected_trend_api_keys])]
     dff["day"] = pd.to_datetime(dff["day"], errors="coerce")
     dff = dff.dropna(subset=["day"])
     dff = dff[
@@ -443,27 +550,83 @@ def render_key_tab(
         dff["bucket"] = periods.dt.start_time
 
     # Aggregate into buckets
-    agg = dff.groupby(["bucket", "api_key_id"], as_index=False)["value"].sum()
-    wide = agg.pivot_table(
-        index="bucket", columns="api_key_id", values="value", fill_value=0.0
-    ).sort_index()
+    agg = dff.groupby(["bucket", "api_key_id", "metric"], as_index=False)["value"].sum()
+    keys = sorted(agg["api_key_id"].astype(str).unique().tolist())
+    metrics = [m for m in trend_metrics if m in set(agg["metric"].astype(str).unique().tolist())]
+    bucket_index = sorted(agg["bucket"].unique().tolist())
+
+    cmap = plt.get_cmap("tab20")
+    color_by_key = {k: cmap(i % cmap.N) for i, k in enumerate(keys)}
+    hatch_cycle = ["", "//", "\\", "xx", "--", "++", "oo", "..", "**"]
+    hatch_by_metric = {m: hatch_cycle[i % len(hatch_cycle)] for i, m in enumerate(metrics)}
 
     fig, ax = plt.subplots()
-    wide.plot(kind="bar", ax=ax, stacked=True)
+    x = np.arange(len(bucket_index))
+    bottom = np.zeros(len(bucket_index), dtype=float)
+    for key_id in keys:
+        for metric_name in metrics:
+            part = agg[(agg["api_key_id"] == key_id) & (agg["metric"] == metric_name)].copy()
+            value_by_bucket = {r["bucket"]: float(r["value"]) for _, r in part.iterrows()}
+            heights = np.array([value_by_bucket.get(b, 0.0) for b in bucket_index], dtype=float)
+            if np.allclose(heights, 0.0):
+                continue
+            ax.bar(
+                x,
+                heights,
+                bottom=bottom,
+                color=color_by_key[key_id],
+                hatch=hatch_by_metric[metric_name],
+                edgecolor="black",
+                linewidth=0.3,
+            )
+            bottom += heights
 
     # x labels
     if bar_width_label == "Day":
-        labels = [idx.strftime("%Y-%m-%d") for idx in wide.index]
+        labels = [pd.Timestamp(idx).strftime("%Y-%m-%d") for idx in bucket_index]
     elif bar_width_label == "Week":
-        labels = [f"Week {idx.isocalendar().week}" for idx in wide.index]
+        labels = [f"Week {pd.Timestamp(idx).isocalendar().week}" for idx in bucket_index]
     else:
-        labels = [idx.strftime("%B") for idx in wide.index]
+        labels = [pd.Timestamp(idx).strftime("%B") for idx in bucket_index]
 
-    ax.set_xticks(range(len(labels)))
+    ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=45, ha="right")
     ax.set_xlabel("")
-    ax.set_ylabel(metric)
-    ax.set_title(f"{metric} by API key (stacked)")
-    ax.legend(title="api_key_id", fontsize="small")
+    ax.set_ylabel("Usage")
+    ax.set_title("Selected metrics by API key (stacked)")
+    shown_keys = [k for k in keys if k in set(agg["api_key_id"].astype(str).tolist())]
+    key_legend = None
+    if shown_keys:
+        legend_hatch = hatch_by_metric.get(metrics[0], "")
+        handles = [
+            Patch(
+                facecolor=color_by_key[k],
+                edgecolor="black",
+                linewidth=0.3,
+                hatch=legend_hatch,
+            )
+            for k in shown_keys
+        ]
+        labels_legend = [display_name_by_key.get(k, k) for k in shown_keys]
+        key_legend = ax.legend(handles, labels_legend, title="key_name", fontsize="small", loc="upper left")
+    if metrics:
+        metric_handles = [
+            Patch(
+                facecolor="white",
+                edgecolor="black",
+                linewidth=0.3,
+                hatch=hatch_by_metric[m],
+            )
+            for m in metrics
+        ]
+        ax.legend(
+            metric_handles,
+            metrics,
+            title="metric pattern",
+            fontsize="small",
+            loc="upper right",
+        )
+        if key_legend is not None:
+            ax.add_artist(key_legend)
     fig.tight_layout()
     st.pyplot(fig)

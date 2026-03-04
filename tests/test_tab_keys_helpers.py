@@ -43,6 +43,13 @@ def test_usage_totals_dict_to_tidy_df() -> None:
     assert set(df["metric"].tolist()) == {"requests", "tokens"}
 
 
+def test_usage_totals_dict_to_tidy_df_drops_zero_values() -> None:
+    totals = {"key1": {"requests": 0, "tokens": 5}}
+    df = tab_keys._usage_totals_dict_to_tidy_df("proj1", date(2026, 1, 1), totals)
+    assert len(df) == 1
+    assert df.iloc[0]["metric"] == "tokens"
+
+
 def test_safe_concat_usage_empty() -> None:
     out = tab_keys._safe_concat_usage()
     assert list(out.columns) == ["project_id", "api_key_id", "day", "metric", "value"]
@@ -57,3 +64,17 @@ def test_load_usage_by_key_cache_csv(tmp_path: Path) -> None:
     df = tab_keys._load_usage_by_key_cache_csv(path)
     assert len(df) == 1
     assert df.iloc[0]["project_id"] == "p1"
+
+
+def test_api_key_names_csv_roundtrip(tmp_path: Path) -> None:
+    path = tmp_path / "api_key_names.csv"
+    to_save = pd.DataFrame(
+        {
+            "api_key_id": ["key_a", "key_b"],
+            "key_name": ["Finance ETL", "Support Bot"],
+        }
+    )
+    tab_keys._save_api_key_names_csv(path, to_save)
+    loaded = tab_keys._load_api_key_names_csv(path)
+    assert len(loaded) == 2
+    assert dict(zip(loaded["api_key_id"], loaded["key_name"]))["key_a"] == "Finance ETL"

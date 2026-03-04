@@ -29,6 +29,30 @@ roles:
       - "api.model.chat_completions.request"
       - "api.model.embeddings.request"
 
+      # Responses API
+      - "api.responses.read"
+      - "api.responses.write"
+
+      # API keys (self only)
+      - "api.organization.projects.api_keys.self.read"
+      - "api.organization.projects.api_keys.self.write"
+
+  # ------------------------------------------------------------------
+  # Batch-mode baseline
+  # ------------------------------------------------------------------
+  - role_name: "Batch Mode"
+    description: "Can run batch jobs and manage batch operations. Cannot build agents, manage datasets, or fine-tune."
+    permissions:
+      # Project visibility
+      - "project.read"
+
+      # Inference & model access
+      - "api.model.read"
+      - "model.read"
+      - "model.request"
+      - "api.model.chat_completions.request"
+      - "api.model.embeddings.request"
+
       # Batch execution
       - "api.batch.read"
       - "api.batch.write"
@@ -61,7 +85,6 @@ roles:
       - "api.model.chat_completions.request"
       - "api.model.embeddings.request"
 
-  
       # Batch execution
       - "api.batch.read"
       - "api.batch.write"
