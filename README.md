@@ -136,7 +136,12 @@ main(
 
 - Requires an **OpenAI Admin API key**
 - The key is entered in the UI sidebar
-- Stored **locally** (plaintext) for convenience
+- Minimum permissions needed by features in this app:
+  - `api.organization.projects.read` (list/select projects)
+  - `api.usage.read` (project usage/cost + API key usage tabs)
+  - Project-role management write permission for `POST /v1/projects/{project_id}/roles`
+    (the exact RBAC permission name may vary by your org policy setup)
+- The entered API key is automatically stored in a local `.env` file for convenience.
 
 ⚠️ **Use only on trusted machines**
 
