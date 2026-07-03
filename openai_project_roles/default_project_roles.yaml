@@ -22,6 +22,36 @@ roles:
       # Project visibility
       - "project.read"
 
+      # Usage monitoring (self only)
+      - "api.usage.read"
+
+      # Inference & model access
+      - "api.model.read"
+      - "model.read"
+      - "model.request"
+      - "api.model.chat_completions.request"
+      - "api.model.embeddings.request"
+
+      # Responses API
+      - "api.responses.read"
+      - "api.responses.write"
+
+      # API keys (self only)
+      - "api.organization.projects.api_keys.self.read"
+      - "api.organization.projects.api_keys.self.write"
+
+  # ------------------------------------------------------------------
+  # Codex user
+  # ------------------------------------------------------------------
+  - role_name: "Codex user"
+    description: "Can use Codex-style API workflows with project-scoped Responses and model access. No batch, agents, datasets, or fine-tuning."
+    permissions:
+      # Project visibility
+      - "project.read"
+
+      # Usage monitoring (self only)
+      - "api.usage.read"
+
       # Inference & model access
       - "api.model.read"
       - "model.read"
@@ -45,6 +75,9 @@ roles:
     permissions:
       # Project visibility
       - "project.read"
+
+      # Usage monitoring (self only)
+      - "api.usage.read"
 
       # Inference & model access
       - "api.model.read"
@@ -73,10 +106,13 @@ roles:
   # Retrieval-Augmented Generation (RAG)
   # ------------------------------------------------------------------
   - role_name: "RAG"
-    description: "Can build retrieval-augmented workflows using files, vector stores,datasets, prompts, and assistants. No fine-tuning or admin access."
+    description: "Can build retrieval-augmented workflows using files, vector stores, prompts, and model access. No fine-tuning, assistants, threads, datasets, connectors, batch, or admin access."
     permissions:
       # Project visibility
       - "project.read"
+
+      # Usage monitoring (self only)
+      - "api.usage.read"
 
       # Inference & model access
       - "api.model.read"
@@ -84,10 +120,6 @@ roles:
       - "model.request"
       - "api.model.chat_completions.request"
       - "api.model.embeddings.request"
-
-      # Batch execution
-      - "api.batch.read"
-      - "api.batch.write"
 
       # Responses API
       - "api.responses.read"
@@ -105,23 +137,9 @@ roles:
       - "vector_store.read"
       - "vector_store.write"
 
-      # Assistants & threads (RAG orchestration)
-      - "api.assistants.read"
-      - "api.assistants.write"
-      - "api.threads.read"
-      - "api.threads.write"
-
       # Prompt management (system / reusable prompts)
       - "api.context.prompts.read"
       - "api.context.prompts.write"
-
-      # Datasets (corpora for retrieval & evaluation)
-      - "api.datasets.read"
-      - "api.datasets.write"
-
-      # External connectors (optional RAG sources)
-      - "api.connectors.read"
-      - "api.connectors.write"
 
   # ------------------------------------------------------------------
   # Fine-tuning
@@ -131,6 +149,9 @@ roles:
     permissions:
       # Project visibility
       - "project.read"
+
+      # Usage monitoring (self only)
+      - "api.usage.read"
 
       # Inference & model access
       - "api.model.read"
@@ -183,6 +204,9 @@ roles:
     permissions:
       # Project visibility
       - "project.read"
+
+      # Usage monitoring (self only)
+      - "api.usage.read"
 
       # Inference & model access
       - "api.model.read"
@@ -241,6 +265,9 @@ roles:
     permissions:
       # Project visibility
       - "project.read"
+
+      # Usage monitoring (self only)
+      - "api.usage.read"
 
       # Inference & model access
       - "api.model.read"

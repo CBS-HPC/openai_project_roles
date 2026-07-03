@@ -1,8 +1,35 @@
 """CLI entry point for the OpenAI Project Roles app."""
 
+from __future__ import annotations
+
+import importlib.util
 import os
 import sys
-from streamlit.web import cli as stcli
+from pathlib import Path
+
+
+def _bootstrap_local_venv() -> None:
+    """Re-exec into the repo's local .venv when the current env is incomplete.
+
+    This lets `python cli.py` work even if the active interpreter is a system,
+    conda, or other environment that does not have the project's dependencies.
+    """
+
+    required_modules = ("streamlit", "matplotlib")
+    if all(importlib.util.find_spec(module) is not None for module in required_modules):
+        return
+
+    project_root = Path(__file__).resolve().parents[1]
+    venv_python = project_root / ".venv" / "Scripts" / "python.exe"
+    if not venv_python.exists():
+        return
+
+    # Prevent a loop if the re-execed interpreter still reaches this block.
+    if os.environ.get("OPENAI_PROJECT_ROLES_BOOTSTRAPPED") == "1":
+        return
+
+    os.environ["OPENAI_PROJECT_ROLES_BOOTSTRAPPED"] = "1"
+    os.execv(str(venv_python), [str(venv_python), str(Path(__file__).resolve()), *sys.argv[1:]])
 
 
 def main():
@@ -15,6 +42,10 @@ def main():
         openai_project_roles --usage-path path/to/openai_project_usage.csv
         openai_project_roles -c path/to/default_project_roles.yaml
     """
+    _bootstrap_local_venv()
+
+    from streamlit.web import cli as stcli
+
     # Get the directory where this module is located
     module_dir = os.path.dirname(os.path.abspath(__file__))
     app_path = os.path.join(module_dir, "app/main.py")
